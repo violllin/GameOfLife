@@ -64,6 +64,7 @@
     <Compile Include="UI\BufferedPanel.Designer.cs">
       <DependentUpon>BufferedPanel.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\GameRenderer.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

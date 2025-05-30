@@ -197,7 +197,7 @@
             this._size25Button.Name = "_size25Button";
             this._size25Button.Size = new System.Drawing.Size(90, 40);
             this._size25Button.TabIndex = 12;
-            this._size25Button.Text = "Size S";
+            this._size25Button.Text = "25x25";
             this._size25Button.UseVisualStyleBackColor = false;
             this._size25Button.Click += new System.EventHandler(this._size25Button_Click);
             // 
@@ -209,7 +209,7 @@
             this._size40Button.Name = "_size40Button";
             this._size40Button.Size = new System.Drawing.Size(90, 40);
             this._size40Button.TabIndex = 13;
-            this._size40Button.Text = "Size M";
+            this._size40Button.Text = "40x40";
             this._size40Button.UseVisualStyleBackColor = false;
             this._size40Button.Click += new System.EventHandler(this._size40Button_Click);
             // 
@@ -221,7 +221,7 @@
             this._size50Button.Name = "_size50Button";
             this._size50Button.Size = new System.Drawing.Size(90, 40);
             this._size50Button.TabIndex = 14;
-            this._size50Button.Text = "Size L";
+            this._size50Button.Text = "50х50";
             this._size50Button.UseVisualStyleBackColor = false;
             this._size50Button.Click += new System.EventHandler(this._size50Button_Click);
             // 

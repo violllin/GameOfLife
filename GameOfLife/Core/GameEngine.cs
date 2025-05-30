@@ -25,7 +25,7 @@ namespace GameOfLife.Core
 
         public void StartNewGame(int width, int height)
         {
-            _universe.SetCells(new Cell[width, height]);
+            _universe.SetCells(new Cell[width, height], _universe.GetWidth(), _universe.GetHeight());
             _previousState = new bool[width, height];
             _generationCount = 0;
             _totalDeaths = 0;

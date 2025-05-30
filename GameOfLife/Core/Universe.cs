@@ -1,100 +1,89 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameOfLife.Core
 {
     public class Universe
     {
-        private int _width;
-        private int _height;
         private Cell[,] _cells;
-        private readonly List<Cell[,]> _previousGenerations = new List<Cell[,]>();
+        private readonly List<bool[,]> _previousStates = new List<bool[,]>();
+        private const int MaxStatesToTrack = 10;
+
+        public int Width { get; private set; }
+        public int Height { get; private set; }
 
         public Universe(int width, int height)
         {
-            _width = width;
-            _height = height;
+            Width = width;
+            Height = height;
             _cells = new Cell[width, height];
             InitializeCells();
         }
 
-        public int Width => _width;
-        public int Height => _height;
-
-        public void SetCells(Cell[,] cells)
-        {
-            _cells = new Cell[cells.GetLength(0), cells.GetLength(1)];
-            for (int y = 0; y < cells.GetLength(1); y++)
-            {
-                for (int x = 0; x < cells.GetLength(0); x++)
-                {
-                    _cells[x, y] = new Cell(x, y, cells[x, y].IsAlive);
-                }
-            }
-            _width = cells.GetLength(0);
-            _height = cells.GetLength(1);
-        }
-
         private void InitializeCells()
         {
-            for (int y = 0; y < _height; y++)
+            for (int y = 0; y < Height; y++)
             {
-                for (int x = 0; x < _width; x++)
+                for (int x = 0; x < Width; x++)
                 {
-                    _cells[x, y] = new Cell(x, y);
+                    _cells[x, y] = new Cell(x, y, false);
                 }
             }
         }
 
-        public void Randomize(System.Random random)
+        public Cell[,] GetCells() => _cells;
+
+        public int GetWidth()
         {
-            for (int y = 0; y < _height; y++)
-            {
-                for (int x = 0; x < _width; x++)
-                {
-                    _cells[x, y].IsAlive = random.Next(0, 2) == 1;
-                }
-            }
-            _previousGenerations.Clear();
+            return Width;
         }
 
-        public void Clear()
+        public int GetHeight()
         {
-            for (int y = 0; y < _height; y++)
+            return Height;
+        }
+
+        public void SetCells(Cell[,] newCells, int width, int height)
+        {
+            _cells = newCells;
+            width = newCells.GetLength(0);
+            height = newCells.GetLength(1);
+        }
+
+        public bool IsWithinBounds(int x, int y)
+        {
+            return x >= 0 && x < Width && y >= 0 && y < Height;
+        }
+
+        public void ToggleCell(int x, int y)
+        {
+            if (IsWithinBounds(x, y))
             {
-                for (int x = 0; x < _width; x++)
-                {
-                    _cells[x, y].IsAlive = false;
-                }
+                _cells[x, y].IsAlive = !_cells[x, y].IsAlive;
             }
-            _previousGenerations.Clear();
         }
 
         public void NextGeneration()
         {
-            SaveCurrentGeneration();
+            var newCells = new Cell[Width, Height];
+            var currentState = GetCurrentState();
 
-            for (int y = 0; y < _height; y++)
+            if (_previousStates.Count >= MaxStatesToTrack)
             {
-                for (int x = 0; x < _width; x++)
+                _previousStates.RemoveAt(0);
+            }
+            _previousStates.Add(currentState);
+
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
                 {
                     int aliveNeighbors = CountAliveNeighbors(x, y);
-                    _cells[x, y].NextState = _cells[x, y].IsAlive
-                        ? aliveNeighbors == 2 || aliveNeighbors == 3
-                        : aliveNeighbors == 3;
+                    newCells[x, y] = new Cell(x, y, _cells[x, y].NextState(aliveNeighbors));
                 }
             }
 
-            for (int y = 0; y < _height; y++)
-            {
-                for (int x = 0; x < _width; x++)
-                {
-                    _cells[x, y].IsAlive = _cells[x, y].NextState;
-                }
-            }
+            _cells = newCells;
         }
 
         private int CountAliveNeighbors(int x, int y)
@@ -107,15 +96,12 @@ namespace GameOfLife.Core
                 {
                     if (i == 0 && j == 0) continue;
 
-                    int neighborX = x + i;
-                    int neighborY = y + j;
+                    int nx = x + i;
+                    int ny = y + j;
 
-                    if (neighborX >= 0 && neighborX < _width && neighborY >= 0 && neighborY < _height)
+                    if (IsWithinBounds(nx, ny) && _cells[nx, ny].IsAlive)
                     {
-                        if (_cells[neighborX, neighborY].IsAlive)
-                        {
-                            count++;
-                        }
+                        count++;
                     }
                 }
             }
@@ -123,83 +109,72 @@ namespace GameOfLife.Core
             return count;
         }
 
-        private void SaveCurrentGeneration()
+        public int CountAliveCells()
         {
-            var snapshot = new Cell[_width, _height];
-            for (int y = 0; y < _height; y++)
+            int alive = 0;
+            for (int y = 0; y < Height; y++)
             {
-                for (int x = 0; x < _width; x++)
+                for (int x = 0; x < Width; x++)
                 {
-                    snapshot[x, y] = new Cell(x, y, _cells[x, y].IsAlive);
+                    if (_cells[x, y].IsAlive) alive++;
                 }
             }
-            _previousGenerations.Add(snapshot);
-
-            if (_previousGenerations.Count > 10)
-            {
-                _previousGenerations.RemoveAt(0);
-            }
+            return alive;
         }
 
-        public bool IsStable()
+        public int CountDeaths(bool[,] previousState)
         {
-            if (_previousGenerations.Count < 2) return false;
-
-            var current = _previousGenerations[_previousGenerations.Count - 1];
-            var previous = _previousGenerations[_previousGenerations.Count - 2];
-
-            for (int y = 0; y < _height; y++)
+            int deaths = 0;
+            for (int y = 0; y < Height; y++)
             {
-                for (int x = 0; x < _width; x++)
+                for (int x = 0; x < Width; x++)
                 {
-                    if (current[x, y].IsAlive != previous[x, y].IsAlive)
+                    if (previousState[x, y] && !_cells[x, y].IsAlive)
                     {
-                        return false;
+                        deaths++;
                     }
                 }
             }
+            return deaths;
+        }
 
-            return true;
+        public bool[,] GetCurrentState()
+        {
+            var state = new bool[Width, Height];
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    state[x, y] = _cells[x, y].IsAlive;
+                }
+            }
+            return state;
         }
 
         public bool IsExtinct()
         {
-            for (int y = 0; y < _height; y++)
-            {
-                for (int x = 0; x < _width; x++)
-                {
-                    if (_cells[x, y].IsAlive)
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
+            return CountAliveCells() == 0;
+        }
+
+        public bool IsStable()
+        {
+            if (_previousStates.Count < 2) return false;
+
+            var currentState = GetCurrentState();
+            var previousState = _previousStates[_previousStates.Count - 1];
+
+            return AreStatesEqual(currentState, previousState);
         }
 
         public bool IsPeriodic()
         {
-            if (_previousGenerations.Count < 2) return false;
+            if (_previousStates.Count < 2) return false;
 
-            var current = _previousGenerations[_previousGenerations.Count - 1];
+            var currentState = GetCurrentState();
 
-            for (int i = 0; i < _previousGenerations.Count - 1; i++)
+            for (int i = 0; i < _previousStates.Count - 1; i++)
             {
-                var previous = _previousGenerations[i];
-                bool isSame = true;
-
-                for (int y = 0; y < _height && isSame; y++)
-                {
-                    for (int x = 0; x < _width && isSame; x++)
-                    {
-                        if (current[x, y].IsAlive != previous[x, y].IsAlive)
-                        {
-                            isSame = false;
-                        }
-                    }
-                }
-
-                if (isSame)
+                if (AreStatesEqual(currentState, _previousStates[i]))
                 {
                     return true;
                 }
@@ -208,9 +183,77 @@ namespace GameOfLife.Core
             return false;
         }
 
-        public Cell[,] GetCells()
+        private bool AreStatesEqual(bool[,] state1, bool[,] state2)
         {
-            return _cells;
+            if (state1.GetLength(0) != state2.GetLength(0) ||
+                state1.GetLength(1) != state2.GetLength(1))
+            {
+                return false;
+            }
+
+            for (int y = 0; y < state1.GetLength(1); y++)
+            {
+                for (int x = 0; x < state1.GetLength(0); x++)
+                {
+                    if (state1[x, y] != state2[x, y])
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public void Clear()
+        {
+            InitializeCells();
+        }
+
+        public void Randomize(Random random)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    _cells[x, y].IsAlive = random.Next(2) == 1;
+                }
+            }
+        }
+
+        public GameState SaveState(int generationCount, int totalDeaths)
+        {
+            var savedCells = new Cell[Width, Height];
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    savedCells[x, y] = new Cell(x, y, _cells[x, y].IsAlive);
+                }
+            }
+
+            return new GameState
+            {
+                Cells = savedCells,
+                GenerationCount = generationCount,
+                TotalDeaths = totalDeaths
+            };
+        }
+
+        public void LoadState(GameState state)
+        {
+            var savedCells = state.Cells;
+            var newCells = new Cell[savedCells.GetLength(0), savedCells.GetLength(1)];
+
+            for (int y = 0; y < savedCells.GetLength(1); y++)
+            {
+                for (int x = 0; x < savedCells.GetLength(0); x++)
+                {
+                    newCells[x, y] = new Cell(x, y, savedCells[x, y].IsAlive);
+                }
+            }
+
+            SetCells(newCells, GetWidth(), GetHeight());
         }
     }
 }

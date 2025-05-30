@@ -2,7 +2,6 @@
 using GameOfLife.UI;
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace GameOfLife
@@ -11,6 +10,7 @@ namespace GameOfLife
     {
         private const int CellSize = 15;
         private const int TimerInterval = 200;
+
         private Universe _universe;
         private readonly Random _random = new Random();
         private readonly Timer _timer = new Timer();
@@ -47,44 +47,10 @@ namespace GameOfLife
                 Location = new Point(10, 100),
                 Size = new Size(width * CellSize + 1, height * CellSize + 1),
                 BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.White 
+                BackColor = Color.White
             };
 
-            _gamePanel.Paint += (sender, e) =>
-            {
-                var g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.None;
-                g.Clear(Color.White); 
-
-                using (var gridPen = new Pen(Color.LightGray))
-                {
-                    for (int y = 0; y <= height; y++)
-                        g.DrawLine(gridPen, 0, y * CellSize, width * CellSize, y * CellSize);
-
-                    for (int x = 0; x <= width; x++)
-                        g.DrawLine(gridPen, x * CellSize, 0, x * CellSize, height * CellSize);
-                }
-
-                var cells = _universe.GetCells();
-                using (var cellBrush = new SolidBrush(Color.HotPink))
-                {
-                    for (int y = 0; y < height; y++)
-                    {
-                        for (int x = 0; x < width; x++)
-                        {
-                            if (cells[x, y].IsAlive)
-                            {
-                                g.FillRectangle(cellBrush,
-                                              x * CellSize + 1,
-                                              y * CellSize + 1,
-                                              CellSize - 1,
-                                              CellSize - 1);
-                            }
-                        }
-                    }
-                }
-            };
-
+            _gamePanel.Paint += GamePanel_Paint;
             _gamePanel.MouseDown += GamePanel_MouseDown;
             _gamePanel.MouseMove += GamePanel_MouseMove;
             _gamePanel.MouseUp += GamePanel_MouseUp;
@@ -95,25 +61,13 @@ namespace GameOfLife
         private void InitializeControls()
         {
             _speedTrackBar.ValueChanged += _speedTrackBar_Scroll;
-
             _timer.Interval = TimerInterval;
             _timer.Tick += Timer_Tick;
         }
 
         private void UpdateCellsCount()
         {
-            int alive = 0;
-            var cells = _universe.GetCells();
-
-            for (int y = 0; y < _universe.Height; y++)
-            {
-                for (int x = 0; x < _universe.Width; x++)
-                {
-                    if (cells[x, y].IsAlive)
-                        alive++;
-                }
-            }
-
+            int alive = _universe.CountAliveCells();
             _aliveCellsLabel.Text = $"Alive: {alive}";
             _deadCellsLabel.Text = $"Deads: {_totalDeaths}";
         }
@@ -128,7 +82,6 @@ namespace GameOfLife
 
             InitializeGamePanel(width, height);
             _generationCount = 0;
-            
             UpdateCellsCount();
 
             _size25Button.Top = _gamePanel.Bottom + 10;
@@ -138,40 +91,8 @@ namespace GameOfLife
 
         private void GamePanel_Paint(object sender, PaintEventArgs e)
         {
-            var g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.None;
-            g.InterpolationMode = InterpolationMode.NearestNeighbor;
-            g.PixelOffsetMode = PixelOffsetMode.Half;
-
-            g.Clear(Color.White);
-
-            using (var gridPen = new Pen(Color.LightGray))
-            {
-                for (int y = 0; y <= _universe.Height; y++)
-                {
-                    g.DrawLine(gridPen, 0, y * CellSize, _universe.Width * CellSize, y * CellSize);
-                }
-
-                for (int x = 0; x <= _universe.Width; x++)
-                {
-                    g.DrawLine(gridPen, x * CellSize, 0, x * CellSize, _universe.Height * CellSize);
-                }
-            }
-
-            var cells = _universe.GetCells();
-            using (var cellBrush = new SolidBrush(Color.Black))
-            {
-                for (int y = 0; y < _universe.Height; y++)
-                {
-                    for (int x = 0; x < _universe.Width; x++)
-                    {
-                        if (cells[x, y].IsAlive)
-                        {
-                            g.FillRectangle(cellBrush, x * CellSize + 1, y * CellSize + 1, CellSize - 1, CellSize - 1);
-                        }
-                    }
-                }
-            }
+            var renderer = new GameRenderer(_universe, CellSize);
+            renderer.Render(e.Graphics);
         }
 
         private void GamePanel_MouseDown(object sender, MouseEventArgs e)
@@ -201,15 +122,12 @@ namespace GameOfLife
             int cellX = x / CellSize;
             int cellY = y / CellSize;
 
-            if (cellX >= 0 && cellX < _universe.Width && cellY >= 0 && cellY < _universe.Height)
+            if (_universe.IsWithinBounds(cellX, cellY))
             {
-                var cells = _universe.GetCells();
-                cells[cellX, cellY].IsAlive = !cells[cellX, cellY].IsAlive;
-
+                _universe.ToggleCell(cellX, cellY);
                 var rect = new Rectangle(cellX * CellSize + 1, cellY * CellSize + 1, CellSize - 1, CellSize - 1);
                 _gamePanel.Invalidate(rect);
                 _gamePanel.Update();
-
                 UpdateCellsCount();
             }
         }
@@ -221,71 +139,47 @@ namespace GameOfLife
 
         private void NextGeneration()
         {
-            var cells = _universe.GetCells();
-            for (int y = 0; y < _universe.Height; y++)
-            {
-                for (int x = 0; x < _universe.Width; x++)
-                {
-                    _previousState[x, y] = cells[x, y].IsAlive;
-                }
-            }
-
+            _previousState = _universe.GetCurrentState();
             _universe.NextGeneration();
             _generationCount++;
             _generationLabel.Text = $"Generation: {_generationCount}";
 
-            int deathsInThisGeneration = 0;
-            for (int y = 0; y < _universe.Height; y++)
-            {
-                for (int x = 0; x < _universe.Width; x++)
-                {
-                    if (_previousState[x, y] && !cells[x, y].IsAlive)
-                    {
-                        deathsInThisGeneration++;
-                    }
-                }
-            }
-            _totalDeaths += deathsInThisGeneration;
-
+            _totalDeaths += _universe.CountDeaths(_previousState);
             _gamePanel.Invalidate();
             UpdateCellsCount();
 
+            CheckGameEndConditions();
+        }
+
+        private void CheckGameEndConditions()
+        {
             if (_universe.IsExtinct())
             {
-                _timer.Stop();
-                RestoreUIAfterGameEnd();
-                MessageBox.Show("All cells have died.", "Game Over",
-                              MessageBoxButtons.OK, MessageBoxIcon.Information);
+                EndGame("All cells have died.");
             }
             else if (_universe.IsStable())
             {
-                _timer.Stop();
-                RestoreUIAfterGameEnd();
-                MessageBox.Show("Stable configuration reached.", "Game Over",
-                               MessageBoxButtons.OK, MessageBoxIcon.Information);
+                EndGame("Stable configuration reached.");
             }
             else if (_universe.IsPeriodic())
             {
-                _timer.Stop();
-                RestoreUIAfterGameEnd();
-                MessageBox.Show("Periodic configuration detected.", "Game Over",
-                               MessageBoxButtons.OK, MessageBoxIcon.Information);
+                EndGame("Periodic configuration detected.");
             }
+        }
+
+        private void EndGame(string message)
+        {
+            _timer.Stop();
+            RestoreUIAfterGameEnd();
+            MessageBox.Show(message, "Game Over", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void StartButton_Click(object sender, EventArgs e)
         {
             _timer.Interval = _speedTrackBar.Value;
             _timer.Start();
-
             _isRunning = true;
-            _startButton.Enabled = false;
-            _stopButton.Enabled = true;
-            _randomizeButton.Enabled = false;
-            _clearButton.Enabled = false;
-            _stepButton.Enabled = false;
-            _saveButton.Enabled = false;
-            _loadButton.Enabled = false;
+            UpdateButtonStates();
         }
 
         private void _stopButton_Click(object sender, EventArgs e)
@@ -301,7 +195,6 @@ namespace GameOfLife
                 MessageBox.Show("Please stop the simulation before using step mode.", "Warning");
                 return;
             }
-
             NextGeneration();
         }
 
@@ -323,24 +216,7 @@ namespace GameOfLife
                 return;
             }
 
-            var cells = _universe.GetCells();
-            var savedCells = new Cell[cells.GetLength(0), cells.GetLength(1)];
-
-            for (int y = 0; y < _universe.Height; y++)
-            {
-                for (int x = 0; x < _universe.Width; x++)
-                {
-                    savedCells[x, y] = new Cell(x, y, cells[x, y].IsAlive);
-                }
-            }
-
-            _savedState = new GameState
-            {
-                Cells = savedCells,
-                GenerationCount = _generationCount,
-                TotalDeaths = _totalDeaths
-            };
-
+            _savedState = _universe.SaveState(_generationCount, _totalDeaths);
             MessageBox.Show("Game state saved in memory!", "Success");
         }
 
@@ -360,29 +236,12 @@ namespace GameOfLife
 
             try
             {
-                int width = _savedState.Cells.GetLength(0);
-                int height = _savedState.Cells.GetLength(1);
-                InitializeGamePanel(width, height);
-
-                var savedCells = _savedState.Cells;
-                var newCells = new Cell[width, height];
-
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        newCells[x, y] = new Cell(x, y, savedCells[x, y].IsAlive);
-                    }
-                }
-
-                _universe.SetCells(newCells);
+                _universe.LoadState(_savedState);
                 _generationCount = _savedState.GenerationCount;
                 _totalDeaths = _savedState.TotalDeaths;
-
                 _generationLabel.Text = $"Generation: {_generationCount}";
                 _gamePanel.Invalidate();
                 UpdateCellsCount();
-
                 MessageBox.Show("Game state loaded from memory!", "Success");
             }
             catch (Exception ex)
@@ -407,7 +266,6 @@ namespace GameOfLife
             {
                 _timer.Interval = _speedTrackBar.Value;
             }
-
         }
 
         private void _size25Button_Click(object sender, EventArgs e)
@@ -433,13 +291,18 @@ namespace GameOfLife
         private void RestoreUIAfterGameEnd()
         {
             _isRunning = false;
-            _startButton.Enabled = true;
-            _stopButton.Enabled = false;
-            _randomizeButton.Enabled = true;
-            _clearButton.Enabled = true;
-            _stepButton.Enabled = true;
-            _saveButton.Enabled = true;
-            _loadButton.Enabled = true;
+            UpdateButtonStates();
+        }
+
+        private void UpdateButtonStates()
+        {
+            _startButton.Enabled = !_isRunning;
+            _stopButton.Enabled = _isRunning;
+            _randomizeButton.Enabled = !_isRunning;
+            _clearButton.Enabled = !_isRunning;
+            _stepButton.Enabled = !_isRunning;
+            _saveButton.Enabled = !_isRunning;
+            _loadButton.Enabled = !_isRunning;
         }
 
         private void Form1_Load(object sender, EventArgs e)

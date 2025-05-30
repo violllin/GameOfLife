@@ -1,24 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GameOfLife.Core
+﻿namespace GameOfLife.Core
 {
     public class Cell
     {
-        public bool IsAlive { get; set; }
-        public bool NextState { get; set; }
         public int X { get; }
         public int Y { get; }
+        public bool IsAlive { get; set; }
 
-        public Cell(int x, int y, bool isAlive = false)
+        public Cell(int x, int y, bool isAlive)
         {
             X = x;
             Y = y;
             IsAlive = isAlive;
-            NextState = false;
+        }
+
+        public bool NextState(int aliveNeighbors)
+        {
+            if (IsAlive)
+            {
+                return aliveNeighbors == 2 || aliveNeighbors == 3;
+            }
+            else
+            {
+                return aliveNeighbors == 3;
+            }
         }
     }
 }
