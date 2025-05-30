@@ -22,12 +22,14 @@ namespace GameOfLife
         private GameState _savedState;
         private BufferedPanel _gamePanel;
 
+
         public Form1()
         {
             InitializeComponent();
             InitializeGamePanel(40, 40);
             InitializeControls();
             UpdateCellsCount();
+            UpdateGenerationCount();
         }
 
         private void InitializeGamePanel(int width, int height)
@@ -68,8 +70,8 @@ namespace GameOfLife
         private void UpdateCellsCount()
         {
             int alive = _universe.CountAliveCells();
-            _aliveCellsLabel.Text = $"Alive: {alive}";
-            _deadCellsLabel.Text = $"Deads: {_totalDeaths}";
+            _aliveCellsLabel.Text = $"Живые клетки: {alive}";
+            _deadCellsLabel.Text = $"Мертвые клетки: {_totalDeaths}";
         }
 
         private void ChangeGridSize(int width, int height)
@@ -142,7 +144,7 @@ namespace GameOfLife
             _previousState = _universe.GetCurrentState();
             _universe.NextGeneration();
             _generationCount++;
-            _generationLabel.Text = $"Generation: {_generationCount}";
+            UpdateGenerationCount();
 
             _totalDeaths += _universe.CountDeaths(_previousState);
             _gamePanel.Invalidate();
@@ -203,7 +205,7 @@ namespace GameOfLife
             _universe.Clear();
             _generationCount = 0;
             _totalDeaths = 0;
-            _generationLabel.Text = $"Generation: {_generationCount}";
+            UpdateGenerationCount();
             _gamePanel.Invalidate();
             UpdateCellsCount();
         }
@@ -239,7 +241,7 @@ namespace GameOfLife
                 _universe.LoadState(_savedState);
                 _generationCount = _savedState.GenerationCount;
                 _totalDeaths = _savedState.TotalDeaths;
-                _generationLabel.Text = $"Generation: {_generationCount}";
+                UpdateGenerationCount();
                 _gamePanel.Invalidate();
                 UpdateCellsCount();
                 MessageBox.Show("Game state loaded from memory!", "Success");
@@ -255,7 +257,7 @@ namespace GameOfLife
             _universe.Randomize(_random);
             _generationCount = 0;
             _totalDeaths = 0;
-            _generationLabel.Text = $"Generation: {_generationCount}";
+            UpdateGenerationCount();
             _gamePanel.Invalidate();
             UpdateCellsCount();
         }
@@ -283,11 +285,6 @@ namespace GameOfLife
             ChangeGridSize(50, 50);
         }
 
-        private void _generationLabel_Click(object sender, EventArgs e)
-        {
-            _generationLabel.Text = $"Generation: {_generationCount}";
-        }
-
         private void RestoreUIAfterGameEnd()
         {
             _isRunning = false;
@@ -308,6 +305,16 @@ namespace GameOfLife
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void _helpButton_Click(object sender, EventArgs e)
+        {
+            var helpForm = new HelpForm();
+            helpForm.ShowDialog();
+        }
+        private void UpdateGenerationCount()
+        {
+            _generationLabel.Text = $"Поколение: {_generationCount}";
         }
     }
 }
