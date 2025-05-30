@@ -4,7 +4,6 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace GameOfLife
 {
@@ -12,7 +11,6 @@ namespace GameOfLife
     {
         private const int CellSize = 15;
         private const int TimerInterval = 200;
-
         private Universe _universe;
         private readonly Random _random = new Random();
         private readonly Timer _timer = new Timer();
@@ -23,7 +21,6 @@ namespace GameOfLife
         private bool[,] _previousState;
         private GameState _savedState;
         private BufferedPanel _gamePanel;
-     
 
         public Form1()
         {
@@ -32,7 +29,6 @@ namespace GameOfLife
             InitializeControls();
             UpdateCellsCount();
         }
-
 
         private void InitializeGamePanel(int width, int height)
         {
@@ -51,10 +47,44 @@ namespace GameOfLife
                 Location = new Point(10, 100),
                 Size = new Size(width * CellSize + 1, height * CellSize + 1),
                 BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.White
+                BackColor = Color.White 
             };
 
-            _gamePanel.Paint += GamePanel_Paint;
+            _gamePanel.Paint += (sender, e) =>
+            {
+                var g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.None;
+                g.Clear(Color.White); 
+
+                using (var gridPen = new Pen(Color.LightGray))
+                {
+                    for (int y = 0; y <= height; y++)
+                        g.DrawLine(gridPen, 0, y * CellSize, width * CellSize, y * CellSize);
+
+                    for (int x = 0; x <= width; x++)
+                        g.DrawLine(gridPen, x * CellSize, 0, x * CellSize, height * CellSize);
+                }
+
+                var cells = _universe.GetCells();
+                using (var cellBrush = new SolidBrush(Color.HotPink))
+                {
+                    for (int y = 0; y < height; y++)
+                    {
+                        for (int x = 0; x < width; x++)
+                        {
+                            if (cells[x, y].IsAlive)
+                            {
+                                g.FillRectangle(cellBrush,
+                                              x * CellSize + 1,
+                                              y * CellSize + 1,
+                                              CellSize - 1,
+                                              CellSize - 1);
+                            }
+                        }
+                    }
+                }
+            };
+
             _gamePanel.MouseDown += GamePanel_MouseDown;
             _gamePanel.MouseMove += GamePanel_MouseMove;
             _gamePanel.MouseUp += GamePanel_MouseUp;
@@ -64,20 +94,7 @@ namespace GameOfLife
 
         private void InitializeControls()
         {
-            _speedTrackBar = new TrackBar
-            {
-                Location = new Point(690, 10),
-                Size = new Size(150, 30),
-                Minimum = 50,
-                Maximum = 1000,
-                Value = TimerInterval,
-                TickFrequency = 100
-            };
-
-            _speedTrackBar.ValueChanged += SpeedTrackBar_ValueChanged;
-
-         
-            Controls.Add(_speedTrackBar);
+            _speedTrackBar.ValueChanged += _speedTrackBar_Scroll;
 
             _timer.Interval = TimerInterval;
             _timer.Tick += Timer_Tick;
@@ -236,49 +253,31 @@ namespace GameOfLife
             if (_universe.IsExtinct())
             {
                 _timer.Stop();
-                _isRunning = false;
-                _startButton.Enabled = true;
-                _stopButton.Enabled = false;
-                MessageBox.Show("All cells have died.", "Game Over");
+                RestoreUIAfterGameEnd();
+                MessageBox.Show("All cells have died.", "Game Over",
+                              MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else if (_universe.IsStable())
             {
                 _timer.Stop();
-                _isRunning = false;
-                _startButton.Enabled = true;
-                _stopButton.Enabled = false;
-                MessageBox.Show("Stable configuration reached.", "Game Over");
+                RestoreUIAfterGameEnd();
+                MessageBox.Show("Stable configuration reached.", "Game Over",
+                               MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else if (_universe.IsPeriodic())
             {
                 _timer.Stop();
-                _isRunning = false;
-                _startButton.Enabled = true;
-                _stopButton.Enabled = false;
-                MessageBox.Show("Periodic configuration detected.", "Game Over");
+                RestoreUIAfterGameEnd();
+                MessageBox.Show("Periodic configuration detected.", "Game Over",
+                               MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-        }
-
-        private void SpeedTrackBar_ValueChanged(object sender, EventArgs e)
-        {
-        }
-            
-
-
-
-        /// ///////////////////////////////////////////////////////////
-        /// /// ///////////////////////////////////////////////////////////
-        /// /// ///////////////////////////////////////////////////////////
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
         }
 
         private void StartButton_Click(object sender, EventArgs e)
         {
-
+            _timer.Interval = _speedTrackBar.Value;
             _timer.Start();
+
             _isRunning = true;
             _startButton.Enabled = false;
             _stopButton.Enabled = true;
@@ -287,20 +286,12 @@ namespace GameOfLife
             _stepButton.Enabled = false;
             _saveButton.Enabled = false;
             _loadButton.Enabled = false;
-
         }
 
         private void _stopButton_Click(object sender, EventArgs e)
         {
             _timer.Stop();
-            _isRunning = false;
-            _startButton.Enabled = true;
-            _stopButton.Enabled = false;
-            _randomizeButton.Enabled = true;
-            _clearButton.Enabled = true;
-            _stepButton.Enabled = true;
-            _saveButton.Enabled = true;
-            _loadButton.Enabled = true;
+            RestoreUIAfterGameEnd();
         }
 
         private void _stepButton_Click(object sender, EventArgs e)
@@ -412,7 +403,11 @@ namespace GameOfLife
 
         private void _speedTrackBar_Scroll(object sender, EventArgs e)
         {
-            _timer.Interval = _speedTrackBar.Value;
+            if (_isRunning)
+            {
+                _timer.Interval = _speedTrackBar.Value;
+            }
+
         }
 
         private void _size25Button_Click(object sender, EventArgs e)
@@ -433,6 +428,23 @@ namespace GameOfLife
         private void _generationLabel_Click(object sender, EventArgs e)
         {
             _generationLabel.Text = $"Generation: {_generationCount}";
+        }
+
+        private void RestoreUIAfterGameEnd()
+        {
+            _isRunning = false;
+            _startButton.Enabled = true;
+            _stopButton.Enabled = false;
+            _randomizeButton.Enabled = true;
+            _clearButton.Enabled = true;
+            _stepButton.Enabled = true;
+            _saveButton.Enabled = true;
+            _loadButton.Enabled = true;
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

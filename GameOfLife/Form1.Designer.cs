@@ -48,7 +48,7 @@
             // 
             // _startButton
             // 
-            this._startButton.BackColor = System.Drawing.Color.MistyRose;
+            this._startButton.BackColor = System.Drawing.Color.LightPink;
             this._startButton.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this._startButton.Location = new System.Drawing.Point(12, 12);
             this._startButton.Name = "_startButton";
@@ -60,7 +60,7 @@
             // 
             // _stopButton
             // 
-            this._stopButton.BackColor = System.Drawing.Color.MistyRose;
+            this._stopButton.BackColor = System.Drawing.Color.LightPink;
             this._stopButton.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this._stopButton.Location = new System.Drawing.Point(108, 12);
             this._stopButton.Name = "_stopButton";
@@ -72,7 +72,7 @@
             // 
             // _clearButton
             // 
-            this._clearButton.BackColor = System.Drawing.Color.MistyRose;
+            this._clearButton.BackColor = System.Drawing.Color.LightPink;
             this._clearButton.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this._clearButton.Location = new System.Drawing.Point(300, 12);
             this._clearButton.Name = "_clearButton";
@@ -84,7 +84,7 @@
             // 
             // _randomizeButton
             // 
-            this._randomizeButton.BackColor = System.Drawing.Color.MistyRose;
+            this._randomizeButton.BackColor = System.Drawing.Color.LightPink;
             this._randomizeButton.Font = new System.Drawing.Font("Calibri", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this._randomizeButton.Location = new System.Drawing.Point(588, 12);
             this._randomizeButton.Name = "_randomizeButton";
@@ -96,7 +96,7 @@
             // 
             // _stepButton
             // 
-            this._stepButton.BackColor = System.Drawing.Color.MistyRose;
+            this._stepButton.BackColor = System.Drawing.Color.LightPink;
             this._stepButton.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this._stepButton.Location = new System.Drawing.Point(204, 12);
             this._stepButton.Name = "_stepButton";
@@ -108,7 +108,7 @@
             // 
             // _saveButton
             // 
-            this._saveButton.BackColor = System.Drawing.Color.MistyRose;
+            this._saveButton.BackColor = System.Drawing.Color.LightPink;
             this._saveButton.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this._saveButton.Location = new System.Drawing.Point(396, 12);
             this._saveButton.Name = "_saveButton";
@@ -120,7 +120,7 @@
             // 
             // _loadButton
             // 
-            this._loadButton.BackColor = System.Drawing.Color.MistyRose;
+            this._loadButton.BackColor = System.Drawing.Color.LightPink;
             this._loadButton.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this._loadButton.Location = new System.Drawing.Point(492, 12);
             this._loadButton.Name = "_loadButton";
@@ -132,18 +132,22 @@
             // 
             // _speedTrackBar
             // 
-            this._speedTrackBar.BackColor = System.Drawing.SystemColors.Control;
+            this._speedTrackBar.BackColor = System.Drawing.Color.MistyRose;
             this._speedTrackBar.Location = new System.Drawing.Point(840, 26);
+            this._speedTrackBar.Maximum = 1000;
+            this._speedTrackBar.Minimum = 50;
             this._speedTrackBar.Name = "_speedTrackBar";
             this._speedTrackBar.Size = new System.Drawing.Size(148, 45);
             this._speedTrackBar.TabIndex = 7;
+            this._speedTrackBar.TickFrequency = 100;
+            this._speedTrackBar.Value = 200;
             this._speedTrackBar.Scroll += new System.EventHandler(this._speedTrackBar_Scroll);
             // 
             // _generationLabel
             // 
             this._generationLabel.AutoSize = true;
             this._generationLabel.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this._generationLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this._generationLabel.ForeColor = System.Drawing.Color.Crimson;
             this._generationLabel.Location = new System.Drawing.Point(776, 92);
             this._generationLabel.Name = "_generationLabel";
             this._generationLabel.Size = new System.Drawing.Size(107, 26);
@@ -155,7 +159,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label1.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.label1.ForeColor = System.Drawing.Color.Crimson;
             this.label1.Location = new System.Drawing.Point(773, 26);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(64, 26);
@@ -166,7 +170,7 @@
             // 
             this._aliveCellsLabel.AutoSize = true;
             this._aliveCellsLabel.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this._aliveCellsLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this._aliveCellsLabel.ForeColor = System.Drawing.Color.Crimson;
             this._aliveCellsLabel.Location = new System.Drawing.Point(830, 137);
             this._aliveCellsLabel.Name = "_aliveCellsLabel";
             this._aliveCellsLabel.Size = new System.Drawing.Size(53, 26);
@@ -177,7 +181,7 @@
             // 
             this._deadCellsLabel.AutoSize = true;
             this._deadCellsLabel.Font = new System.Drawing.Font("Calibri", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this._deadCellsLabel.ForeColor = System.Drawing.Color.Black;
+            this._deadCellsLabel.ForeColor = System.Drawing.Color.Crimson;
             this._deadCellsLabel.Location = new System.Drawing.Point(827, 179);
             this._deadCellsLabel.Name = "_deadCellsLabel";
             this._deadCellsLabel.Size = new System.Drawing.Size(56, 26);
@@ -225,6 +229,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.MistyRose;
             this.ClientSize = new System.Drawing.Size(1000, 900);
             this.Controls.Add(this._size50Button);
             this.Controls.Add(this._size40Button);
