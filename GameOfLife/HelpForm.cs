@@ -35,12 +35,12 @@ namespace GameOfLife
 
         private void _closeButton1_Click(object sender, EventArgs e)
         {
-
+            this.Close();
         }
 
         private void _closeButton2_Click(object sender, EventArgs e)
         {
-
+            this.Close();
         }
 
         private void richTextBox1_TextChanged(object sender, EventArgs e)

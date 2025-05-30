@@ -105,7 +105,7 @@
             this._closeButton2.Name = "_closeButton2";
             this._closeButton2.Size = new System.Drawing.Size(90, 40);
             this._closeButton2.TabIndex = 1;
-            this._closeButton2.Text = "Close";
+            this._closeButton2.Text = "Закрыть";
             this._closeButton2.UseVisualStyleBackColor = false;
             this._closeButton2.Click += new System.EventHandler(this._closeButton2_Click);
             // 
