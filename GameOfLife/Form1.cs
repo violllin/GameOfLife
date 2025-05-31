@@ -78,7 +78,7 @@ namespace GameOfLife
         {
             if (_isRunning)
             {
-                MessageBox.Show("Please stop the simulation before changing grid size.", "Warning");
+                MessageBox.Show("Пожалуйста, остановите симуляцию перед изменением размера сетки.", "Предупреждение");
                 return;
             }
 
@@ -157,15 +157,15 @@ namespace GameOfLife
         {
             if (_universe.IsExtinct())
             {
-                EndGame("All cells have died.");
+                EndGame("Все клетки мерты");
             }
             else if (_universe.IsStable())
             {
-                EndGame("Stable configuration reached.");
+                EndGame("Стабильная конфигурация");
             }
             else if (_universe.IsPeriodic())
             {
-                EndGame("Periodic configuration detected.");
+                EndGame("Переодическая конфигурация");
             }
         }
 
@@ -173,7 +173,7 @@ namespace GameOfLife
         {
             _timer.Stop();
             RestoreUIAfterGameEnd();
-            MessageBox.Show(message, "Game Over", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(message, "Игра закончена", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void StartButton_Click(object sender, EventArgs e)
@@ -194,7 +194,7 @@ namespace GameOfLife
         {
             if (_isRunning)
             {
-                MessageBox.Show("Please stop the simulation before using step mode.", "Warning");
+                MessageBox.Show("Пожалуйста, остановите симуляцию перед использованием пошагового режима.", "Предупреждение");
                 return;
             }
             NextGeneration();
@@ -214,25 +214,25 @@ namespace GameOfLife
         {
             if (_isRunning)
             {
-                MessageBox.Show("Please stop the simulation before saving.", "Warning");
+                MessageBox.Show("Пожалуйста, остановите симуляцию перед сохранением.", "Предупреждение");
                 return;
             }
 
             _savedState = _universe.SaveState(_generationCount, _totalDeaths);
-            MessageBox.Show("Game state saved in memory!", "Success");
+            MessageBox.Show("Состояние игры сохранено в памяти", "Успешно");
         }
 
         private void _loadButton_Click(object sender, EventArgs e)
         {
             if (_isRunning)
             {
-                MessageBox.Show("Please stop the simulation before loading.", "Warning");
+                MessageBox.Show("Пожалуйста, остановите симуляцию перед загрузкой.", "Предупреждение");
                 return;
             }
 
             if (_savedState == null)
             {
-                MessageBox.Show("No saved state found in memory.", "Error");
+                MessageBox.Show("В памяти не обнаружено ни одного сохраненного состояния.", "Ошибка");
                 return;
             }
 
@@ -244,11 +244,11 @@ namespace GameOfLife
                 UpdateGenerationCount();
                 _gamePanel.Invalidate();
                 UpdateCellsCount();
-                MessageBox.Show("Game state loaded from memory!", "Success");
+                MessageBox.Show("Состояние игры загружено из памяти!", "Успешно");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading state: {ex.Message}", "Error");
+                MessageBox.Show($"Ошибка при загрузке: {ex.Message}", "Ошибка");
             }
         }
 

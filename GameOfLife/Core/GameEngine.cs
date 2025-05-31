@@ -96,15 +96,15 @@ namespace GameOfLife.Core
         {
             if (_universe.IsExtinct())
             {
-                throw new GameEndedException("All cells have died.", GameEndReason.Extinction);
+                throw new GameEndedException("Все клетки мертвы.", GameEndReason.Extinction);
             }
             else if (_universe.IsStable())
             {
-                throw new GameEndedException("Stable configuration reached.", GameEndReason.Stability);
+                throw new GameEndedException("Стабильная конфигурация.", GameEndReason.Stability);
             }
             else if (_universe.IsPeriodic())
             {
-                throw new GameEndedException("Periodic configuration detected.", GameEndReason.Periodicity);
+                throw new GameEndedException("Периодическая конфигурация", GameEndReason.Periodicity);
             }
         }
 
