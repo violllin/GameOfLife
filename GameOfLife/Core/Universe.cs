@@ -86,7 +86,7 @@ namespace GameOfLife.Core
             _cells = newCells;
         }
 
-        private int CountAliveNeighbors(int x, int y)
+        public int CountAliveNeighbors(int x, int y)
         {
             int count = 0;
 
@@ -183,7 +183,7 @@ namespace GameOfLife.Core
             return false;
         }
 
-        private bool AreStatesEqual(bool[,] state1, bool[,] state2)
+        public bool AreStatesEqual(bool[,] state1, bool[,] state2)
         {
             if (state1.GetLength(0) != state2.GetLength(0) ||
                 state1.GetLength(1) != state2.GetLength(1))
